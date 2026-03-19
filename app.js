@@ -15,14 +15,14 @@ const DB = {
   // ── Seed data on first load ──
   init() {
     if (!localStorage.getItem(this.KEYS.clients)) {
-      
-      localStorage.setItem(this.KEYS.clients, JSON.stringify(clients));
+      localStorage.setItem(this.KEYS.clients, JSON.stringify([]));
     }
 
     if (!localStorage.getItem(this.KEYS.recipes)) {
-      
-            }
-         
+      localStorage.setItem(this.KEYS.recipes, JSON.stringify([]));
+    }
+
+    if (!localStorage.getItem(this.KEYS.swapRequests)) {
       localStorage.setItem(this.KEYS.swapRequests, JSON.stringify([]));
     }
   },
@@ -120,6 +120,9 @@ const DB = {
     return client;
   }
 };
+
+// Auto-init
+DB.init();
 
 // Auto-init
 DB.init();
