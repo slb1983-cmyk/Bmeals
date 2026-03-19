@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Bryn's Meal Planning</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { background: var(--linen); }
+
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: calc(100vh - 65px);
+    }
+    .sidebar {
+      background: var(--charcoal);
+      padding: 2rem 1.25rem;
+      position: sticky;
+      top: 65px;
+      height: calc(100vh - 65px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .sidebar-section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #6a5e58;
+      padding: 1rem 0.75rem 0.3rem;
+    }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: var(--radius-sm);
+      color: #c4b0a8;
+      font-size: 0.875rem;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      transition: all 0.15s;
+      font-family: var(--font-body);
+    }
+    .sidebar-link:hover { background: rgba(255,255,255,0.07); color: white; }
+    .sidebar-link.active { background: var(--dusty-rose); color: white; }
+    .sidebar-link .icon { font-size: 1rem; width: 20px; text-align: center; }
+    .sidebar-bottom { margin-top: auto; }
+
+    .main { padding: 2.5rem 2rem; max-width: 1000px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── STATS ROW ── */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      border: 1px solid var(--parchment);
+      box-shadow: var(--shadow-card);
+      text-align: center;
+    }
+    .stat-card .stat-num {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      color: var(--charcoal);
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    .stat-card .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+    .stat-card .stat-accent { color: var(--dusty-rose); }
+
+    /* ── CLIENT TABLE ── */
+    .client-table { width: 100%; border-collapse: collapse; }
+    .client-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 2px solid var(--parchment);
+    }
+    .client-table td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--parchment);
+      vertical-align: middle;
+      font-size: 0.9rem;
+      color: var(--charcoal);
+    }
+    .client-table tr:hover td { background: var(--linen); }
+    .client-table tr:last-child td { border-bottom: none; }
+
+    /* ── RECIPE POSTER ── */
+    .recipe-poster { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .recipe-slot {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--parchment);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-card);
+    }
+    .recipe-slot h4 {
+      font-family: var(--font-display);
+      margin-bottom: 1rem;
+      color: var(--warm-brown);
+      font-size: 1rem;
+      border-bottom: 1px solid var(--parchment);
+      padding-bottom: 0.75rem;
+    }
+    .recipe-slot .mini-input { margin-bottom: 0.75rem; }
+    .recipe-slot .mini-input label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 0.2rem; }
+    .recipe-slot .mini-input input,
+    .recipe-slot .mini-input textarea {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1.5px solid var(--parchment);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      color: var(--charcoal);
+      outline: none;
+      background: var(--white);
+    }
+    .recipe-slot .mini-input input:focus,
+    .recipe-slot .mini-input textarea:focus { border-color: var(--dusty-rose); }
+    .mini-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+
+    /* ── SWAP QUEUE ── */
+    .swap-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--parchment);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .swap-card .swap-info h4 { font-size: 0.95rem; margin-bottom: 0.3rem; }
+    .swap-card .swap-info p { font-size: 0.85rem; color: var(--muted); }
+    .swap-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+
+    /* ── LOGIN ── */
+    .login-wrap {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center; padding: 2rem;
+    }
+    .login-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 3rem 2.5rem;
+      max-width: 380px; width: 100%;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--parchment);
+      text-align: center;
+    }
+
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .table-wrap { background: var(--white); border-radius: var(--radius); border: 1px solid var(--parchment); overflow: hidden; box-shadow: var(--shadow-card); }
+
+    @media (max-width: 700px) {
+      .dashboard-layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; flex-direction: row; flex-wrap: wrap; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .recipe-poster { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-brand" href="index.html">Bryn's</a>
+  <div class="nav-links">
+    <span style="font-size:0.8rem; color:var(--muted); font-weight:700; letter-spacing:0.08em; text-transform:uppercase;">Admin</span>
+    <button class="btn btn-ghost btn-sm" id="adminLogoutBtn" style="display:none;" onclick="adminLogout()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- ── ADMIN LOGIN ── -->
+<div class="login-wrap" id="adminLoginView">
+  <div class="login-card">
+    <svg viewBox="0 0 60 60" width="64" style="margin:0 auto 1rem;">
+      <circle cx="30" cy="30" r="28" fill="#faf6f0" stroke="#e8c4b8" stroke-width="2"/>
+      <rect x="20" y="26" width="20" height="16" rx="3" fill="#e8c4b8"/>
+      <rect x="23" y="20" width="14" height="10" rx="7" fill="none" stroke="#c9877a" stroke-width="2"/>
+      <circle cx="30" cy="33" r="2.5" fill="#c9877a"/>
+    </svg>
+    <h2>Admin Access</h2>
+    <p style="margin:0.5rem 0 1.5rem; font-size:0.9rem; color:var(--muted);">Bryn's management dashboard</p>
+    <div id="adminLoginAlert"></div>
+    <div class="form-group text-left">
+      <label>Admin Password</label>
+      <input type="password" id="adminPassword" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doAdminLogin()"/>
+    </div>
+    <button class="btn btn-primary" style="width:100%;" onclick="doAdminLogin()">Sign In</button>
+    <p style="margin-top:1rem; font-size:0.75rem; color:var(--muted);">Demo password: bryn_admin_2024</p>
+  </div>
+</div>
+
+<!-- ── ADMIN DASHBOARD ── -->
+<div id="adminDashView" style="display:none;">
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="sidebar-section-label">Overview</div>
+      <button class="sidebar-link active" onclick="showAdminPanel('overview',this)"><span class="icon">📊</span> Dashboard</button>
+
+      <div class="sidebar-section-label">Clients</div>
+      <button class="sidebar-link" onclick="showAdminPanel('clients',this)"><span class="icon">👥</span> All Clients</button>
+      <button class="sidebar-link" onclick="showAdminPanel('newClient',this)"><span class="icon">➕</span> Add Client</button>
+
+      <div class="sidebar-section-label">Recipes</div>
+      <button class="sidebar-link" onclick="showAdminPanel('postRecipes',this)"><span class="icon">🌿</span> Post This Week's Recipes</button>
+
+      <div class="sidebar-section-label">Requests</div>
+      <button class="sidebar-link" onclick="showAdminPanel('swaps',this)"><span class="icon">🔄</span> Swap Requests <span id="swapBadge" style="background:var(--dusty-rose);color:white;border-radius:50px;padding:0.1rem 0.45rem;font-size:0.7rem;margin-left:auto;"></span></button>
+
+      <div class="sidebar-bottom">
+        <button class="sidebar-link" onclick="adminLogout()" style="color:#6a5e58;"><span class="icon">→</span> Sign Out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <!-- Overview -->
+      <div class="panel active" id="apanel-overview">
+        <h2 style="margin-bottom:1.5rem;">Good morning, Bryn! ✿</h2>
+        <div class="stats-row" id="statsRow"></div>
+        <div class="section-header">
+          <h3>Recent Activity</h3>
+        </div>
+        <div id="recentActivity"></div>
+      </div>
+
+      <!-- Clients -->
+      <div class="panel" id="apanel-clients">
+        <div class="section-header">
+          <h2>All Clients</h2>
+        </div>
+        <div class="table-wrap">
+          <table class="client-table" id="clientTable"></table>
+        </div>
+      </div>
+
+      <!-- Add Client -->
+      <div class="panel" id="apanel-newClient">
+        <h2 style="margin-bottom:1.5rem;">Add New Client</h2>
+        <div class="card">
+          <div id="newClientAlert"></div>
+          <div class="grid-2">
+            <div class="form-group"><label>Full Name</label><input type="text" id="nc_name" placeholder="Jane Smith"/></div>
+            <div class="form-group"><label>Email</label><input type="email" id="nc_email" placeholder="jane@email.com"/></div>
+            <div class="form-group"><label>Phone</label><input type="tel" id="nc_phone" placeholder="412-555-0100"/></div>
+            <div class="form-group"><label>Temporary Password</label><input type="text" id="nc_password" placeholder="e.g. welcome2025"/></div>
+            <div class="form-group">
+              <label>Plan</label>
+              <select id="nc_plan">
+                <option value="basic">Basic — $10/week</option>
+                <option value="premium">Premium — $12/week</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Family Size</label>
+              <input type="number" id="nc_familySize" min="1" max="10" value="2" />
+            </div>
+            <div class="form-group">
+              <label>Delivery Preference</label>
+              <select id="nc_delivery">
+                <option value="email">Email</option>
+                <option value="text">Text / SMS</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Grocery Store</label><input type="text" id="nc_store" placeholder="Giant Eagle, Walmart…"/></div>
+          </div>
+          <div class="form-group"><label>Dietary Restrictions / Allergies</label><input type="text" id="nc_dietary" placeholder="Nut allergy, vegetarian…"/></div>
+          <div class="form-group"><label>Venmo Handle</label><input type="text" id="nc_venmo" placeholder="@client-name"/></div>
+          <button class="btn btn-primary" onclick="addNewClient()">Add Client ✿</button>
+        </div>
+      </div>
+
+      <!-- Post Recipes -->
+      <div class="panel" id="apanel-postRecipes">
+        <h2 style="margin-bottom:0.5rem;">Post This Week's Recipes</h2>
+        <p style="margin-bottom:1.5rem; font-size:0.9rem; color:var(--muted);">Fill in three recipes for each client, then hit Post. Clients will see them immediately in their dashboard.</p>
+
+        <div id="postAlert" style="margin-bottom:1rem;"></div>
+
+        <div class="form-group">
+          <label>Select Client</label>
+          <select id="pr_client" onchange="renderRecipeSlots()">
+            <option value="">— Choose a client —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Week Of (Sunday)</label>
+          <input type="date" id="pr_weekOf" />
+        </div>
+        <div class="form-group" style="max-width:500px;">
+          <label>Bryn's Note to Client</label>
+          <textarea id="pr_note" rows="2" placeholder="A warm personal note to go with this week's recipes…" style="width:100%; padding:0.75rem; border:1.5px solid var(--parchment); border-radius:6px; font-family:var(--font-body); resize:vertical;"></textarea>
+        </div>
+
+        <div id="recipeSlots" class="recipe-poster"></div>
+
+        <div style="margin-top:2rem;">
+          <button class="btn btn-primary" onclick="postRecipes()">Post Recipes for This Client ✿</button>
+        </div>
+      </div>
+
+      <!-- Swap Requests -->
+      <div class="panel" id="apanel-swaps">
+        <h2 style="margin-bottom:1.5rem;">Swap Requests</h2>
+        <div id="swapsList"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  // ── AUTH ──
+  function doAdminLogin() {
+    const pw = document.getElementById('adminPassword').value;
+    if (DB.loginAdmin(pw)) {
+      DB.setSession({ type: 'admin' });
+      showAdminDash();
+    } else {
+      document.getElementById('adminLoginAlert').innerHTML = '<div class="alert alert-error">Incorrect password.</div>';
+    }
+  }
+  function adminLogout() {
+    DB.clearSession();
+    document.getElementById('adminDashView').style.display = 'none';
+    document.getElementById('adminLoginView').style.display = 'flex';
+    document.getElementById('adminLogoutBtn').style.display = 'none';
+  }
+  function showAdminDash() {
+    document.getElementById('adminLoginView').style.display = 'none';
+    document.getElementById('adminDashView').style.display = 'block';
+    document.getElementById('adminLogoutBtn').style.display = 'inline-block';
+    renderAdminDash();
+  }
+  function init() {
+    const session = DB.getSession();
+    if (session && session.type === 'admin') { showAdminDash(); return; }
+    document.getElementById('adminLoginView').style.display = 'flex';
+    document.getElementById('adminDashView').style.display = 'none';
+  }
+
+  // ── PANELS ──
+  function showAdminPanel(id, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+    document.getElementById('apanel-' + id).classList.add('active');
+    if (btn) btn.classList.add('active');
+    if (id === 'clients') renderClientsTable();
+    if (id === 'swaps') renderSwaps();
+    if (id === 'postRecipes') initPostRecipes();
+  }
+
+  // ── OVERVIEW ──
+  function renderAdminDash() {
+    const clients = DB.getClients();
+    const active = clients.filter(c => c.status === 'active');
+    const premium = active.filter(c => c.plan === 'premium');
+    const swaps = DB.getSwapRequests().filter(s => s.status === 'pending');
+    const weeklyRevenue = active.reduce((sum, c) => sum + (c.weeklyRate || 0), 0);
+
+    // Update swap badge
+    document.getElementById('swapBadge').textContent = swaps.length || '';
+
+    document.getElementById('statsRow').innerHTML = `
+      <div class="stat-card"><div class="stat-num stat-accent">${active.length}</div><div class="stat-label">Active Clients</div></div>
+      <div class="stat-card"><div class="stat-num">${premium.length}</div><div class="stat-label">Premium Members</div></div>
+      <div class="stat-card"><div class="stat-num stat-accent">$${weeklyRevenue}</div><div class="stat-label">Weekly Revenue</div></div>
+      <div class="stat-card"><div class="stat-num">${swaps.length}</div><div class="stat-label">Pending Swaps</div></div>`;
+
+    const recent = DB.getSwapRequests().slice(-5).reverse();
+    document.getElementById('recentActivity').innerHTML = recent.length ? `
+      <div class="table-wrap">
+        ${recent.map(s => `
+          <div style="padding:1rem 1.5rem; border-bottom:1px solid var(--parchment); display:flex; justify-content:space-between; align-items:center; font-size:0.875rem;">
+            <div><strong>${s.clientName}</strong> requested a recipe swap</div>
+            <span class="badge ${s.status === 'pending' ? 'badge-rose' : 'badge-sage'}">${s.status}</span>
+          </div>`).join('')}
+      </div>` :
+      '<div class="card text-center"><p style="color:var(--muted);">No recent activity yet.</p></div>';
+  }
+
+  // ── CLIENTS TABLE ──
+  function renderClientsTable() {
+    const clients = DB.getClients();
+    document.getElementById('clientTable').innerHTML = `
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Plan</th>
+          <th>Status</th>
+          <th>Rate</th>
+          <th>Delivery</th>
+          <th>Store</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${clients.map(c => `
+          <tr>
+            <td>
+              <strong>${c.name}</strong><br>
+              <span style="font-size:0.78rem; color:var(--muted);">${c.email}</span>
+            </td>
+            <td><span class="badge ${c.plan === 'premium' ? 'badge-gold' : 'badge-rose'}">${c.plan}</span></td>
+            <td>
+              <span class="badge ${c.status === 'active' ? 'badge-sage' : c.status === 'paused' ? 'badge-gold' : 'badge-rose'}">
+                ${c.status}
+              </span>
+            </td>
+            <td>$${c.weeklyRate}/wk</td>
+            <td style="text-transform:capitalize;">${c.deliveryMethod || '—'}</td>
+            <td style="font-size:0.82rem;">${c.groceryStore || '—'}</td>
+            <td>
+              <button class="btn btn-ghost btn-sm" onclick="toggleClientStatus('${c.id}')">
+                ${c.status === 'active' ? 'Pause' : 'Activate'}
+              </button>
+            </td>
+          </tr>`).join('')}
+      </tbody>`;
+  }
+
+  function toggleClientStatus(id) {
+    const client = DB.getClient(id);
+    const newStatus = client.status === 'active' ? 'paused' : 'active';
+    DB.updateClient(id, { status: newStatus });
+    renderClientsTable();
+  }
+
+  // ── ADD CLIENT ──
+  function addNewClient() {
+    const alertEl = document.getElementById('newClientAlert');
+    const name = document.getElementById('nc_name').value.trim();
+    const email = document.getElementById('nc_email').value.trim();
+    const password = document.getElementById('nc_password').value.trim();
+    const plan = document.getElementById('nc_plan').value;
+    if (!name || !email || !password) {
+      alertEl.innerHTML = '<div class="alert alert-error">Name, email, and password are required.</div>';
+      return;
+    }
+    DB.addClient({
+      name, email,
+      phone: document.getElementById('nc_phone').value.trim(),
+      password,
+      plan,
+      familySize: parseInt(document.getElementById('nc_familySize').value) || 2,
+      deliveryMethod: document.getElementById('nc_delivery').value,
+      groceryStore: document.getElementById('nc_store').value.trim(),
+      dietaryRestrictions: document.getElementById('nc_dietary').value.trim(),
+      venmo: document.getElementById('nc_venmo').value.trim(),
+    });
+    alertEl.innerHTML = '<div class="alert alert-success">✓ Client added successfully! They can now log in to their dashboard.</div>';
+    ['nc_name','nc_email','nc_phone','nc_password','nc_store','nc_dietary','nc_venmo'].forEach(id => document.getElementById(id).value = '');
+    renderAdminDash();
+  }
+
+  // ── POST RECIPES ──
+  function initPostRecipes() {
+    const clients = DB.getClients().filter(c => c.status === 'active' || c.status === 'pending');
+    const select = document.getElementById('pr_client');
+    select.innerHTML = '<option value="">— Choose a client —</option>' +
+      clients.map(c => `<option value="${c.id}">${c.name} (${c.plan})</option>`).join('');
+
+    // Default week-of to this Sunday
+    const d = new Date();
+    d.setDate(d.getDate() - d.getDay());
+    document.getElementById('pr_weekOf').value = d.toISOString().split('T')[0];
+    document.getElementById('recipeSlots').innerHTML = '';
+  }
+
+  function renderRecipeSlots() {
+    const clientId = document.getElementById('pr_client').value;
+    if (!clientId) { document.getElementById('recipeSlots').innerHTML = ''; return; }
+
+    // Try to load existing recipes for this week
+    const week = document.getElementById('pr_weekOf').value || DB.currentWeekDate();
+    const existing = DB.getRecipes().find(r => r.clientId === clientId && r.weekOf === week);
+    const slots = existing ? existing.recipes : [{},{},{}];
+
+    const slotNames = ['Recipe 1', 'Recipe 2', 'Recipe 3'];
+    document.getElementById('recipeSlots').innerHTML = slotNames.map((name, i) => {
+      const r = slots[i] || {};
+      return `
+        <div class="recipe-slot">
+          <h4>✿ ${name}</h4>
+          <div class="mini-input"><label>Title</label><input type="text" id="r${i}_title" value="${r.title||''}" placeholder="e.g. Lemon Herb Chicken"/></div>
+          <div class="mini-input"><label>Description</label><textarea id="r${i}_desc" rows="2" placeholder="Brief, appetizing description…">${r.description||''}</textarea></div>
+          <div class="mini-row">
+            <div class="mini-input"><label>Prep Time</label><input type="text" id="r${i}_prep" value="${r.prepTime||''}" placeholder="15 min"/></div>
+            <div class="mini-input"><label>Cook Time</label><input type="text" id="r${i}_cook" value="${r.cookTime||''}" placeholder="30 min"/></div>
+            <div class="mini-input"><label>Servings</label><input type="number" id="r${i}_servings" value="${r.servings||2}" min="1"/></div>
+          </div>
+          <div class="mini-input"><label>Ingredients (comma-separated)</label><input type="text" id="r${i}_ingredients" value="${(r.ingredients||[]).join(', ')}" placeholder="Chicken, lemon, garlic, olive oil…"/></div>
+          <div class="mini-input"><label>Tags (comma-separated)</label><input type="text" id="r${i}_tags" value="${(r.tags||[]).join(', ')}" placeholder="gluten-free, vegetarian…"/></div>
+        </div>`;
+    }).join('');
+  }
+
+  function postRecipes() {
+    const clientId = document.getElementById('pr_client').value;
+    const weekOf = document.getElementById('pr_weekOf').value;
+    const note = document.getElementById('pr_note').value.trim();
+    const alertEl = document.getElementById('postAlert');
+
+    if (!clientId || !weekOf) {
+      alertEl.innerHTML = '<div class="alert alert-error">Please select a client and week.</div>';
+      return;
+    }
+
+    const recipes = [0,1,2].map(i => ({
+      title: document.getElementById(`r${i}_title`).value.trim(),
+      description: document.getElementById(`r${i}_desc`).value.trim(),
+      prepTime: document.getElementById(`r${i}_prep`).value.trim(),
+      cookTime: document.getElementById(`r${i}_cook`).value.trim(),
+      servings: parseInt(document.getElementById(`r${i}_servings`).value) || 2,
+      ingredients: document.getElementById(`r${i}_ingredients`).value.split(',').map(s=>s.trim()).filter(Boolean),
+      tags: document.getElementById(`r${i}_tags`).value.split(',').map(s=>s.trim()).filter(Boolean),
+      swapped: false,
+    }));
+
+    if (!recipes[0].title) {
+      alertEl.innerHTML = '<div class="alert alert-error">Please fill in at least the first recipe title.</div>';
+      return;
+    }
+
+    DB.addWeeklyRecipes(clientId, weekOf, recipes, note || 'Have a wonderful week! 🌿');
+    alertEl.innerHTML = '<div class="alert alert-success">✓ Recipes posted! The client will see them in their dashboard immediately.</div>';
+    setTimeout(() => alertEl.innerHTML = '', 4000);
+  }
+
+  // ── SWAPS ──
+  function renderSwaps() {
+    const swaps = DB.getSwapRequests().reverse();
+    const el = document.getElementById('swapsList');
+    if (!swaps.length) {
+      el.innerHTML = '<div class="card text-center"><p style="color:var(--muted);">No swap requests yet. 🎉</p></div>';
+      return;
+    }
+
+    const allRecipes = DB.getRecipes();
+    el.innerHTML = swaps.map(s => {
+      const week = allRecipes.find(r => r.clientId === s.clientId && r.weekOf === DB.currentWeekDate());
+      const recipeName = week ? (week.recipes[s.recipeIndex] || {}).title || 'Unknown Recipe' : 'This week\'s recipe';
+      const dateStr = new Date(s.date).toLocaleDateString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+      return `
+        <div class="swap-card">
+          <div class="swap-info">
+            <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.5rem;">
+              <h4>${s.clientName}</h4>
+              <span class="badge ${s.status === 'pending' ? 'badge-rose' : 'badge-sage'}">${s.status}</span>
+              <span style="font-size:0.75rem; color:var(--muted);">${dateStr}</span>
+            </div>
+            <p><strong>Recipe:</strong> ${recipeName}</p>
+            <p><strong>Reason:</strong> ${s.reason}</p>
+            ${s.preference ? `<p><strong>Preference:</strong> ${s.preference}</p>` : ''}
+          </div>
+          <div class="swap-actions">
+            ${s.status === 'pending' ? `
+              <button class="btn btn-sage btn-sm" onclick="handleSwap('${s.id}','resolved')">Mark Resolved</button>
+              <button class="btn btn-ghost btn-sm" onclick="handleSwap('${s.id}','dismissed')">Dismiss</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function handleSwap(id, status) {
+    DB.updateSwapStatus(id, status);
+    renderSwaps();
+    renderAdminDash();
+  }
+
+  init();
+</script>
+</body>
+</html>

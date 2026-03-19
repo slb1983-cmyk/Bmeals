@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bryn's Meal Planning Service</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── HERO ── */
+    .hero {
+      min-height: 92vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+      gap: 4rem;
+    }
+    .hero-eyebrow {
+      font-family: var(--font-script);
+      font-size: 1.4rem;
+      color: var(--dusty-rose);
+      margin-bottom: 0.75rem;
+      display: block;
+      animation: fadeUp 0.6s ease both;
+    }
+    .hero h1 {
+      animation: fadeUp 0.6s 0.1s ease both;
+      color: var(--charcoal);
+    }
+    .hero h1 em { color: var(--dusty-rose); font-style: italic; }
+    .hero p {
+      margin-top: 1.25rem;
+      font-size: 1.1rem;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+    .hero-ctas {
+      margin-top: 2rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+    .hero-graphic {
+      animation: fadeIn 0.8s 0.3s ease both;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how-bg {
+      background: var(--linen);
+      border-top: 1px solid var(--parchment);
+      border-bottom: 1px solid var(--parchment);
+    }
+    .steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 2rem; margin-top: 3rem; }
+    .step {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--parchment);
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+    .step-num {
+      font-family: var(--font-script);
+      font-size: 3rem;
+      color: var(--blush);
+      display: block;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    .step h3 { color: var(--warm-brown); margin-bottom: 0.5rem; }
+
+    /* ── PLANS ── */
+    .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-top: 3rem; max-width: 780px; margin-left: auto; margin-right: auto; }
+    .plan-card {
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      border: 2px solid var(--parchment);
+      background: var(--white);
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .plan-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-soft); }
+    .plan-card.featured { border-color: var(--dusty-rose); }
+    .plan-price {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      color: var(--charcoal);
+    }
+    .plan-price span { font-size: 1rem; color: var(--muted); font-family: var(--font-body); }
+    .plan-features { list-style: none; }
+    .plan-features li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--parchment);
+      color: var(--warm-brown);
+      font-size: 0.95rem;
+    }
+    .plan-features li:last-child { border-bottom: none; }
+    .plan-features li::before { content: '✿ '; color: var(--dusty-rose); }
+    .plan-name { font-family: var(--font-display); font-size: 1.5rem; color: var(--charcoal); }
+    .plan-billed { font-size: 0.85rem; color: var(--muted); }
+
+    /* ── TESTIMONIAL ── */
+    .testimonial-section { background: var(--white); }
+    .testimonial {
+      max-width: 640px;
+      margin: 3rem auto 0;
+      text-align: center;
+      padding: 3rem;
+      background: var(--linen);
+      border-radius: var(--radius);
+      border: 1px solid var(--parchment);
+    }
+    .testimonial blockquote {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 1.3rem;
+      color: var(--warm-brown);
+      line-height: 1.6;
+    }
+    .testimonial cite {
+      display: block;
+      margin-top: 1.25rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-style: normal;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── SIGNUP MODAL ── */
+    .plan-choice { display: flex; gap: 1rem; margin-bottom: 1rem; }
+    .plan-radio { flex: 1; }
+    .plan-radio input { display: none; }
+    .plan-radio label {
+      display: block;
+      padding: 0.875rem 1rem;
+      border: 2px solid var(--parchment);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      text-align: center;
+      font-weight: 700;
+      color: var(--warm-brown);
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .plan-radio input:checked + label {
+      border-color: var(--dusty-rose);
+      background: var(--blush);
+      color: var(--warm-brown);
+    }
+
+    /* ── PAYMENT INFO ── */
+    .payment-box {
+      background: var(--gold-light);
+      border: 1px solid var(--gold);
+      border-radius: var(--radius-sm);
+      padding: 1.25rem;
+      margin-top: 1rem;
+    }
+    .payment-box h4 { font-family: var(--font-display); color: var(--warm-brown); margin-bottom: 0.5rem; font-size: 1rem; }
+    .payment-methods { display: flex; gap: 1rem; margin-top: 0.75rem; }
+    .pay-method {
+      flex: 1;
+      padding: 0.75rem;
+      background: var(--white);
+      border-radius: var(--radius-sm);
+      text-align: center;
+      border: 1px solid var(--parchment);
+    }
+    .pay-method strong { display: block; font-size: 0.95rem; color: var(--charcoal); }
+    .pay-method span { font-size: 0.8rem; color: var(--muted); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--charcoal);
+      color: var(--parchment);
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+    footer .footer-brand {
+      font-family: var(--font-script);
+      font-size: 2rem;
+      color: var(--blush);
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    footer p { color: var(--muted); font-size: 0.85rem; }
+    footer a { color: var(--blush); }
+
+    @media (max-width: 700px) {
+      .hero { grid-template-columns: 1fr; min-height: auto; padding: 3rem 1.5rem; }
+      .hero-graphic { order: -1; }
+      .steps { grid-template-columns: 1fr; }
+      .plans { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVIGATION ── -->
+<nav class="nav">
+  <a class="nav-brand" href="index.html">Bryn's</a>
+  <div class="nav-links">
+    <a href="#how">How It Works</a>
+    <a href="#plans">Plans</a>
+    <a href="dashboard.html">Client Login</a>
+    <a class="btn btn-primary btn-sm" href="#plans" onclick="openSignup()">Get Started</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section>
+  <div class="hero">
+    <div class="hero-text">
+      <span class="hero-eyebrow">Wholesome meals, lovingly planned</span>
+      <h1>Dinner shouldn't be a <em>daily struggle.</em></h1>
+      <p>Bryn's Meal Planning brings you three nourishing, family-friendly recipes every week — perfectly sized for your household, tailored to your needs, and delivered right to your inbox or phone.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#plans" onclick="openSignup()">Start My Plan</a>
+        <a class="btn btn-secondary" href="#how">See How It Works</a>
+      </div>
+      <div class="floral-divider" style="margin-top:2rem; text-align:left;">✿ ✾ ✿</div>
+      <p style="font-size:0.85rem;"><strong style="color:var(--charcoal);">Basic from $10/week · Premium from $12/week</strong></p>
+    </div>
+
+    <!-- ── HERO SVG ILLUSTRATION ── -->
+    <div class="hero-graphic">
+      <svg viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg" width="420" height="420" aria-label="Wholesome food illustration">
+        <!-- Plate background -->
+        <circle cx="210" cy="230" r="160" fill="#f0e8df" opacity="0.6"/>
+        <circle cx="210" cy="230" r="145" fill="none" stroke="#e8c4b8" stroke-width="3" stroke-dasharray="8,6"/>
+
+        <!-- Recipe card left -->
+        <rect x="30" y="80" width="120" height="155" rx="10" fill="#fffdf9" stroke="#e8c4b8" stroke-width="1.5"/>
+        <rect x="30" y="80" width="120" height="40" rx="10" fill="#e8c4b8"/>
+        <rect x="30" y="108" width="120" height="12" rx="0" fill="#e8c4b8"/>
+        <!-- Lemon on card -->
+        <ellipse cx="90" cy="100" rx="18" ry="13" fill="#f5d76e"/>
+        <ellipse cx="90" cy="100" rx="12" ry="8" fill="#f7e48a" opacity="0.7"/>
+        <line x1="90" y1="87" x2="90" y2="113" stroke="#e8b84b" stroke-width="1"/>
+        <line x1="72" y1="100" x2="108" y2="100" stroke="#e8b84b" stroke-width="1"/>
+        <!-- Card text lines -->
+        <rect x="45" y="133" width="90" height="6" rx="3" fill="#e8c4b8" opacity="0.6"/>
+        <rect x="45" y="145" width="70" height="5" rx="2.5" fill="#e8c4b8" opacity="0.4"/>
+        <rect x="45" y="156" width="80" height="5" rx="2.5" fill="#e8c4b8" opacity="0.4"/>
+        <rect x="45" y="167" width="60" height="5" rx="2.5" fill="#e8c4b8" opacity="0.4"/>
+        <!-- Ingredient dots -->
+        <circle cx="52" cy="190" r="6" fill="#8a9e7f"/>
+        <circle cx="68" cy="190" r="6" fill="#c9877a"/>
+        <circle cx="84" cy="190" r="6" fill="#f5d76e"/>
+        <circle cx="100" cy="190" r="6" fill="#b5c9a8"/>
+        <rect x="45" y="205" width="90" height="5" rx="2.5" fill="#e8c4b8" opacity="0.3"/>
+        <rect x="45" y="215" width="70" height="5" rx="2.5" fill="#e8c4b8" opacity="0.3"/>
+
+        <!-- Recipe card right -->
+        <rect x="270" y="60" width="120" height="155" rx="10" fill="#fffdf9" stroke="#b5c9a8" stroke-width="1.5"/>
+        <rect x="270" y="60" width="120" height="40" rx="10" fill="#b5c9a8"/>
+        <rect x="270" y="88" width="120" height="12" rx="0" fill="#b5c9a8"/>
+        <!-- Herb on card -->
+        <ellipse cx="330" cy="80" rx="15" ry="10" fill="#8a9e7f"/>
+        <path d="M322 75 Q330 65 338 75" fill="none" stroke="#6b8060" stroke-width="1.5"/>
+        <path d="M318 80 Q326 70 334 80" fill="none" stroke="#6b8060" stroke-width="1.5"/>
+        <line x1="330" y1="90" x2="330" y2="65" stroke="#6b8060" stroke-width="1.5"/>
+        <!-- Card text lines -->
+        <rect x="285" y="113" width="90" height="6" rx="3" fill="#b5c9a8" opacity="0.6"/>
+        <rect x="285" y="125" width="70" height="5" rx="2.5" fill="#b5c9a8" opacity="0.4"/>
+        <rect x="285" y="136" width="80" height="5" rx="2.5" fill="#b5c9a8" opacity="0.4"/>
+        <rect x="285" y="147" width="60" height="5" rx="2.5" fill="#b5c9a8" opacity="0.4"/>
+        <circle cx="292" cy="170" r="6" fill="#c9877a"/>
+        <circle cx="308" cy="170" r="6" fill="#8a9e7f"/>
+        <circle cx="324" cy="170" r="6" fill="#f5d76e"/>
+        <circle cx="340" cy="170" r="6" fill="#e8c4b8"/>
+        <rect x="285" y="185" width="90" height="5" rx="2.5" fill="#b5c9a8" opacity="0.3"/>
+        <rect x="285" y="195" width="70" height="5" rx="2.5" fill="#b5c9a8" opacity="0.3"/>
+
+        <!-- Big center bowl -->
+        <ellipse cx="210" cy="290" rx="100" ry="30" fill="#e8c4b8" opacity="0.4"/>
+        <path d="M115 260 Q115 330 210 340 Q305 330 305 260 Z" fill="#fffdf9" stroke="#e8c4b8" stroke-width="2"/>
+        <ellipse cx="210" cy="260" rx="95" ry="25" fill="#faf6f0" stroke="#e8c4b8" stroke-width="2"/>
+
+        <!-- Bowl contents - veggies -->
+        <!-- Lettuce leaves -->
+        <ellipse cx="185" cy="262" rx="32" ry="18" fill="#8a9e7f" opacity="0.85"/>
+        <ellipse cx="185" cy="262" rx="24" ry="12" fill="#a5be94" opacity="0.7"/>
+        <ellipse cx="230" cy="258" rx="28" ry="16" fill="#8a9e7f" opacity="0.75"/>
+        <!-- Cherry tomatoes -->
+        <circle cx="175" cy="255" r="10" fill="#c9877a"/>
+        <circle cx="175" cy="255" r="6" fill="#d4967f" opacity="0.6"/>
+        <path d="M175 245 Q178 240 175 238" fill="none" stroke="#6b8060" stroke-width="1.5"/>
+        <circle cx="240" cy="268" r="9" fill="#c9877a"/>
+        <path d="M240 259 Q243 254 240 252" fill="none" stroke="#6b8060" stroke-width="1.5"/>
+        <!-- Carrot slices -->
+        <ellipse cx="205" cy="272" rx="9" ry="6" fill="#e8a050"/>
+        <ellipse cx="215" cy="265" rx="7" ry="5" fill="#e8a050" opacity="0.8"/>
+        <!-- Radish -->
+        <circle cx="250" cy="255" r="8" fill="#c9877a" opacity="0.75"/>
+        <circle cx="250" cy="255" r="5" fill="#e0a090" opacity="0.5"/>
+        <!-- Cucumber -->
+        <ellipse cx="192" cy="275" rx="8" ry="5" fill="#8a9e7f" opacity="0.7"/>
+        <ellipse cx="192" cy="275" rx="5" ry="3" fill="#a5be94" opacity="0.5"/>
+
+        <!-- Fork -->
+        <rect x="340" y="200" width="6" height="80" rx="3" fill="#c4a265"/>
+        <rect x="336" y="200" width="2" height="25" rx="1" fill="#c4a265"/>
+        <rect x="342" y="200" width="2" height="25" rx="1" fill="#c4a265"/>
+        <rect x="348" y="200" width="2" height="25" rx="1" fill="#c4a265"/>
+        <path d="M336 225 Q342 235 348 225" fill="none" stroke="#c4a265" stroke-width="2"/>
+
+        <!-- Spoon -->
+        <rect x="68" y="210" width="6" height="75" rx="3" fill="#c4a265"/>
+        <ellipse cx="71" cy="205" rx="11" ry="16" fill="#c4a265"/>
+        <ellipse cx="71" cy="205" rx="7" ry="11" fill="#e8d5b0"/>
+
+        <!-- Floating herbs -->
+        <path d="M55 150 Q65 135 75 150 Q65 160 55 150Z" fill="#8a9e7f" opacity="0.5"/>
+        <path d="M350 320 Q360 305 370 320 Q360 330 350 320Z" fill="#8a9e7f" opacity="0.5"/>
+        <path d="M40 320 Q50 305 60 320 Q50 330 40 320Z" fill="#b5c9a8" opacity="0.4"/>
+        <path d="M360 150 Q370 135 380 150 Q370 160 360 150Z" fill="#b5c9a8" opacity="0.4"/>
+
+        <!-- Stars / dots -->
+        <circle cx="55" cy="190" r="3" fill="#c4a265" opacity="0.5"/>
+        <circle cx="370" cy="200" r="3" fill="#c4a265" opacity="0.5"/>
+        <circle cx="90" cy="350" r="3" fill="#e8c4b8" opacity="0.7"/>
+        <circle cx="330" cy="360" r="3" fill="#e8c4b8" opacity="0.7"/>
+        <text x="160" y="400" font-family="Dancing Script, cursive" font-size="20" fill="#c9877a" opacity="0.7">eat well, live well</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section id="how" class="how-bg">
+  <div class="section">
+    <div class="text-center">
+      <span class="script" style="font-size:1.2rem; color:var(--dusty-rose);">Simple as Sunday morning</span>
+      <h2 style="margin-top:0.25rem;">How It Works</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="step-num">1</span>
+        <svg viewBox="0 0 80 80" width="64" height="64" style="margin:0 auto 1rem;">
+          <circle cx="40" cy="40" r="36" fill="#faf6f0" stroke="#e8c4b8" stroke-width="2"/>
+          <rect x="22" y="24" width="36" height="32" rx="4" fill="#fffdf9" stroke="#e8c4b8" stroke-width="1.5"/>
+          <line x1="28" y1="34" x2="52" y2="34" stroke="#c9877a" stroke-width="2" stroke-linecap="round"/>
+          <line x1="28" y1="41" x2="48" y2="41" stroke="#e8c4b8" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="28" y1="48" x2="44" y2="48" stroke="#e8c4b8" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="55" cy="55" r="10" fill="#8a9e7f"/>
+          <path d="M50 55 L54 59 L61 52" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+        <h3>Choose Your Plan</h3>
+        <p>Pick Basic or Premium, tell us your family size and any dietary needs, and you're all set.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">2</span>
+        <svg viewBox="0 0 80 80" width="64" height="64" style="margin:0 auto 1rem;">
+          <circle cx="40" cy="40" r="36" fill="#faf6f0" stroke="#b5c9a8" stroke-width="2"/>
+          <!-- Calendar icon -->
+          <rect x="20" y="26" width="40" height="32" rx="4" fill="#fffdf9" stroke="#8a9e7f" stroke-width="1.5"/>
+          <rect x="20" y="26" width="40" height="12" rx="4" fill="#b5c9a8"/>
+          <rect x="20" y="32" width="40" height="6" rx="0" fill="#b5c9a8"/>
+          <circle cx="30" cy="23" r="3" fill="#8a9e7f"/>
+          <circle cx="50" cy="23" r="3" fill="#8a9e7f"/>
+          <rect x="28" y="45" width="7" height="7" rx="1" fill="#e8c4b8"/>
+          <rect x="38" y="45" width="7" height="7" rx="1" fill="#c9877a"/>
+          <rect x="48" y="45" width="7" height="7" rx="1" fill="#e8c4b8"/>
+        </svg>
+        <h3>Bryn Plans Your Week</h3>
+        <p>Each week Bryn hand-picks three recipes tailored to your family. You can request a swap if something doesn't suit.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">3</span>
+        <svg viewBox="0 0 80 80" width="64" height="64" style="margin:0 auto 1rem;">
+          <circle cx="40" cy="40" r="36" fill="#faf6f0" stroke="#e8c4b8" stroke-width="2"/>
+          <!-- Envelope / Phone -->
+          <rect x="18" y="28" width="44" height="30" rx="4" fill="#fffdf9" stroke="#e8c4b8" stroke-width="1.5"/>
+          <path d="M18 32 L40 46 L62 32" fill="none" stroke="#c9877a" stroke-width="1.5"/>
+          <line x1="18" y1="58" x2="32" y2="46" stroke="#e8c4b8" stroke-width="1.5"/>
+          <line x1="62" y1="58" x2="48" y2="46" stroke="#e8c4b8" stroke-width="1.5"/>
+          <circle cx="57" cy="24" r="8" fill="#c9877a"/>
+          <text x="54" y="27" font-size="9" fill="white" font-family="serif">✉</text>
+        </svg>
+        <h3>Delivered to You</h3>
+        <p>Recipes arrive via email or text — whichever you prefer. Premium members get groceries added to their cart too.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PLANS ── -->
+<section id="plans">
+  <div class="section text-center">
+    <span class="script" style="font-size:1.2rem; color:var(--dusty-rose);">Simple, honest pricing</span>
+    <h2 style="margin-top:0.25rem;">Choose Your Plan</h2>
+    <p style="max-width:500px; margin:0.75rem auto 0;">Billed weekly. Pause or cancel anytime from your dashboard. No contracts, no surprises.</p>
+
+    <div class="plans">
+      <!-- Basic -->
+      <div class="plan-card">
+        <div>
+          <span class="badge badge-rose">Basic</span>
+          <div class="plan-price mt-2">$10 <span>/ week</span></div>
+          <div class="plan-billed">Billed monthly at $40</div>
+        </div>
+        <ul class="plan-features mt-2">
+          <li>3 recipes per week, sized for your family</li>
+          <li>Personalized to dietary restrictions</li>
+          <li>Delivery via email <em>or</em> text</li>
+          <li>Request a recipe swap anytime</li>
+          <li>Access to your client dashboard</li>
+        </ul>
+        <button class="btn btn-secondary" style="margin-top:auto;" onclick="openSignup('basic')">Get Basic</button>
+      </div>
+
+      <!-- Premium -->
+      <div class="plan-card featured">
+        <div>
+          <span class="badge badge-gold">✨ Premium</span>
+          <div class="plan-price mt-2">$12 <span>/ week</span></div>
+          <div class="plan-billed">Billed monthly at $48</div>
+        </div>
+        <ul class="plan-features mt-2">
+          <li>Everything in Basic</li>
+          <li>Ingredients added to your online grocery cart</li>
+          <li>Your preferred store, done for you</li>
+          <li>Priority recipe swap requests</li>
+          <li>Bryn's personal grocery tips & notes</li>
+        </ul>
+        <button class="btn btn-primary" style="margin-top:auto;" onclick="openSignup('premium')">Get Premium</button>
+      </div>
+    </div>
+
+    <p class="mt-4" style="font-size:0.85rem; color:var(--muted);">
+      Payment via <strong>Venmo</strong> or <strong>Cash App</strong>. Bryn will be in touch with payment details after signup.
+    </p>
+  </div>
+</section>
+
+<!-- ── TESTIMONIAL ── -->
+<section class="testimonial-section">
+  <div class="section text-center">
+    <span class="script" style="font-size:1.2rem; color:var(--dusty-rose);">From happy families</span>
+    <h2 style="margin-top:0.25rem;">A Little Love Mail</h2>
+    <div class="testimonial">
+      <svg viewBox="0 0 60 45" width="60" style="margin-bottom:1rem; opacity:0.3;">
+        <text x="0" y="40" font-family="Georgia, serif" font-size="60" fill="#c9877a">"</text>
+      </svg>
+      <blockquote>"I used to dread the 'what's for dinner' question every single night. Now Bryn handles it and my whole family is eating better than ever. It's honestly changed our evenings."</blockquote>
+      <cite>— Sarah J., Premium Member · Pittsburgh, PA</cite>
+    </div>
+  </div>
+</section>
+
+<!-- ── ABOUT ── -->
+<section class="how-bg">
+  <div class="section" style="display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center;">
+    <div>
+      <span class="script" style="font-size:1.2rem; color:var(--dusty-rose);">Meet your meal planner</span>
+      <h2 style="margin-top:0.25rem;">Hi, I'm Bryn.</h2>
+      <p style="margin-top:1rem;">I believe that home-cooked meals are one of the greatest gifts you can give your family — but I also know how exhausting it is to plan them week after week.</p>
+      <p style="margin-top:1rem;">That's why I started this service. Each week I hand-select three recipes that are nutritious, delicious, and actually doable on a weeknight. Nothing fussy, nothing processed — just real, wholesome food your family will love.</p>
+      <div class="floral-divider" style="text-align:left;">✿ ✾ ✿</div>
+      <button class="btn btn-primary" onclick="openSignup()">Start Your Journey</button>
+    </div>
+    <div style="display:flex; justify-content:center;">
+      <!-- About illustration -->
+      <svg viewBox="0 0 300 300" width="300" height="300" xmlns="http://www.w3.org/2000/svg" aria-label="Kitchen herbs and vegetables illustration">
+        <!-- Pot -->
+        <ellipse cx="150" cy="230" rx="80" ry="20" fill="#c4a265" opacity="0.3"/>
+        <rect x="80" y="175" width="140" height="60" rx="8" fill="#c9877a"/>
+        <rect x="80" y="175" width="140" height="20" rx="8" fill="#b5765c"/>
+        <rect x="68" y="170" width="20" height="12" rx="4" fill="#7a5c4a"/>
+        <rect x="212" y="170" width="20" height="12" rx="4" fill="#7a5c4a"/>
+        <!-- Steam -->
+        <path d="M130 165 Q125 148 130 132" fill="none" stroke="#e8c4b8" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+        <path d="M150 160 Q145 140 150 120" fill="none" stroke="#e8c4b8" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+        <path d="M170 165 Q165 148 170 132" fill="none" stroke="#e8c4b8" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+        <!-- Herbs in pot -->
+        <path d="M140 175 Q130 145 120 130" fill="none" stroke="#8a9e7f" stroke-width="3" stroke-linecap="round"/>
+        <ellipse cx="118" cy="125" rx="14" ry="9" fill="#8a9e7f"/>
+        <ellipse cx="108" cy="130" rx="11" ry="7" fill="#a5be94"/>
+        <path d="M155 175 Q155 140 145 115" fill="none" stroke="#6b8060" stroke-width="3" stroke-linecap="round"/>
+        <ellipse cx="143" cy="110" rx="16" ry="10" fill="#8a9e7f"/>
+        <path d="M165 175 Q175 148 185 130" fill="none" stroke="#8a9e7f" stroke-width="3" stroke-linecap="round"/>
+        <ellipse cx="188" cy="125" rx="13" ry="8" fill="#a5be94"/>
+        <!-- Floating produce -->
+        <circle cx="55" cy="120" r="22" fill="#c9877a" opacity="0.85"/>
+        <path d="M55 98 Q60 88 55 82" fill="none" stroke="#6b8060" stroke-width="2"/>
+        <ellipse cx="49" cy="86" rx="7" ry="4" fill="#8a9e7f" opacity="0.7" transform="rotate(-20,49,86)"/>
+        <!-- Carrot -->
+        <path d="M240 80 L260 140" stroke="#e8a050" stroke-width="12" stroke-linecap="round"/>
+        <path d="M235 82 Q240 70 248 75" fill="#8a9e7f" stroke="#6b8060" stroke-width="1"/>
+        <path d="M240 78 Q248 66 256 72" fill="#8a9e7f" stroke="#6b8060" stroke-width="1"/>
+        <!-- Small lemon -->
+        <ellipse cx="60" cy="200" rx="18" ry="13" fill="#f5d76e"/>
+        <ellipse cx="60" cy="200" rx="11" ry="8" fill="#f7e48a" opacity="0.6"/>
+        <!-- Leaf sprigs -->
+        <path d="M40 150 Q55 135 70 150" fill="#b5c9a8" opacity="0.6"/>
+        <path d="M230 190 Q245 175 260 190" fill="#b5c9a8" opacity="0.6"/>
+        <!-- Dots decoration -->
+        <circle cx="85" cy="60" r="4" fill="#e8c4b8" opacity="0.7"/>
+        <circle cx="220" cy="55" r="3" fill="#c4a265" opacity="0.6"/>
+        <circle cx="35" cy="250" r="4" fill="#c9877a" opacity="0.4"/>
+        <circle cx="268" cy="240" r="3" fill="#8a9e7f" opacity="0.5"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <span class="footer-brand">Bryn's</span>
+  <p>Meal Planning Service · Pittsburgh, PA</p>
+  <p style="margin-top:0.75rem;">Questions? <a href="mailto:bryn@example.com">bryn@example.com</a></p>
+  <p style="margin-top:1.5rem; font-size:0.75rem; opacity:0.5;">© 2025 Bryn's Meal Planning. All rights reserved.</p>
+</footer>
+
+<!-- ── SIGNUP MODAL ── -->
+<div class="modal-overlay" id="signupModal">
+  <div class="modal" style="max-width:540px;">
+    <button class="modal-close" onclick="closeSignup()">×</button>
+    <div class="text-center mb-3">
+      <span class="script" style="font-size:1.8rem; color:var(--dusty-rose);">Let's get started!</span>
+      <p style="margin-top:0.5rem; font-size:0.9rem;">Fill out the form below and Bryn will be in touch within 24 hours with your payment link and first week's recipes.</p>
+    </div>
+
+    <div id="signupAlert"></div>
+
+    <div class="form-group">
+      <label>Your Name</label>
+      <input type="text" id="su_name" placeholder="Jane & Mike Smith" />
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="su_email" placeholder="you@email.com" />
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" id="su_phone" placeholder="412-555-0100" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Choose Your Plan</label>
+      <div class="plan-choice">
+        <div class="plan-radio">
+          <input type="radio" name="plan" id="plan_basic" value="basic"/>
+          <label for="plan_basic">Basic — $10/wk<br/><small style="font-weight:300;">Recipes only</small></label>
+        </div>
+        <div class="plan-radio">
+          <input type="radio" name="plan" id="plan_premium" value="premium"/>
+          <label for="plan_premium">Premium — $12/wk<br/><small style="font-weight:300;">+ Grocery cart</small></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Delivery Preference</label>
+        <select id="su_delivery">
+          <option value="email">Email</option>
+          <option value="text">Text / SMS</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Preferred Grocery Store</label>
+        <input type="text" id="su_store" placeholder="Giant Eagle, Walmart…" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Dietary Restrictions / Allergies</label>
+      <input type="text" id="su_dietary" placeholder="Nut allergy, vegetarian, gluten-free…" />
+    </div>
+
+    <div class="payment-box">
+      <h4>💛 How Payment Works</h4>
+      <p style="font-size:0.85rem; color:var(--warm-brown);">After Bryn confirms your signup, she'll send a weekly payment request via:</p>
+      <div class="payment-methods">
+        <div class="pay-method">
+          <strong>Venmo</strong>
+          <span>@bryns-meals</span>
+        </div>
+        <div class="pay-method">
+          <strong>Cash App</strong>
+          <span>$BrynsMeals</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%; margin-top:1.5rem;" onclick="submitSignup()">Send My Signup Request ✿</button>
+  </div>
+</div>
+
+<!-- ── SUCCESS MODAL ── -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal text-center">
+    <button class="modal-close" onclick="document.getElementById('successModal').classList.remove('open')">×</button>
+    <svg viewBox="0 0 80 80" width="80" height="80" style="margin:0 auto 1rem;">
+      <circle cx="40" cy="40" r="38" fill="#e8f4e8" stroke="#8a9e7f" stroke-width="2"/>
+      <path d="M24 40 L35 52 L58 28" stroke="#5a8a5a" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h2 style="color:var(--sage);">You're on the list!</h2>
+    <p style="margin-top:1rem;">Bryn will reach out within 24 hours to confirm your plan and get your first week of recipes rolling. Check your email!</p>
+    <div class="floral-divider mt-3">✿ ✾ ✿</div>
+    <button class="btn btn-sage mt-2" onclick="document.getElementById('successModal').classList.remove('open')">Can't wait!</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  function openSignup(plan) {
+    if (plan === 'basic') document.getElementById('plan_basic').checked = true;
+    if (plan === 'premium') document.getElementById('plan_premium').checked = true;
+    document.getElementById('signupModal').classList.add('open');
+  }
+  function closeSignup() {
+    document.getElementById('signupModal').classList.remove('open');
+  }
+  document.getElementById('signupModal').addEventListener('click', function(e) {
+    if (e.target === this) closeSignup();
+  });
+
+  function submitSignup() {
+    const name = document.getElementById('su_name').value.trim();
+    const email = document.getElementById('su_email').value.trim();
+    const phone = document.getElementById('su_phone').value.trim();
+    const plan = document.querySelector('input[name="plan"]:checked')?.value;
+    const delivery = document.getElementById('su_delivery').value;
+    const store = document.getElementById('su_store').value.trim();
+    const dietary = document.getElementById('su_dietary').value.trim();
+    const alertEl = document.getElementById('signupAlert');
+
+    if (!name || !email || !plan) {
+      alertEl.innerHTML = '<div class="alert alert-error">Please fill in your name, email, and choose a plan.</div>';
+      return;
+    }
+
+    DB.addClient({ name, email, phone, plan, deliveryMethod: delivery, groceryStore: store, dietaryRestrictions: dietary, password: 'changeme' });
+    alertEl.innerHTML = '';
+    closeSignup();
+    document.getElementById('successModal').classList.add('open');
+  }
+</script>
+</body>
+</html>

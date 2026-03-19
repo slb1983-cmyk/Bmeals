@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dashboard — Bryn's Meal Planning</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { background: var(--linen); }
+
+    /* ── LAYOUT ── */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: calc(100vh - 65px);
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      background: var(--white);
+      border-right: 1px solid var(--parchment);
+      padding: 2rem 1.5rem;
+      position: sticky;
+      top: 65px;
+      height: calc(100vh - 65px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .sidebar-section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.75rem 0 0.25rem;
+      margin-top: 0.5rem;
+    }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.7rem 1rem;
+      border-radius: var(--radius-sm);
+      color: var(--warm-brown);
+      font-size: 0.9rem;
+      font-weight: 400;
+      text-decoration: none;
+      transition: all 0.15s;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    .sidebar-link:hover, .sidebar-link.active {
+      background: var(--linen);
+      color: var(--dusty-rose);
+      font-weight: 700;
+    }
+    .sidebar-link .icon { font-size: 1.1rem; width: 20px; text-align: center; }
+    .sidebar-bottom { margin-top: auto; }
+
+    /* ── MAIN CONTENT ── */
+    .main { padding: 2.5rem 2rem; max-width: 900px; }
+
+    /* ── SECTION PANELS ── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── WELCOME HEADER ── */
+    .welcome-header {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 2rem 2.5rem;
+      border: 1px solid var(--parchment);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-card);
+    }
+    .welcome-header h1 { font-size: 1.8rem; }
+    .welcome-header h1 em { color: var(--dusty-rose); }
+
+    /* ── RECIPE CARDS ── */
+    .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+    .recipe-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--parchment);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .recipe-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-soft); }
+    .recipe-card-header { padding: 1.25rem 1.5rem 0.75rem; background: var(--linen); border-bottom: 1px solid var(--parchment); }
+    .recipe-card-header h3 { font-size: 1.1rem; line-height: 1.3; }
+    .recipe-card-body { padding: 1.25rem 1.5rem; }
+    .recipe-meta { display: flex; gap: 1rem; font-size: 0.78rem; color: var(--muted); margin-top: 0.5rem; }
+    .recipe-meta span::before { margin-right: 0.25rem; }
+    .ingredient-list { margin-top: 0.75rem; }
+    .ingredient-list p { font-size: 0.82rem; color: var(--muted); line-height: 2; }
+    .tag { display: inline-block; padding: 0.15rem 0.5rem; background: var(--sage-light); color: #4a6040; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 0.1rem; }
+
+    /* ── BRYNS NOTE ── */
+    .bryns-note {
+      background: var(--gold-light);
+      border: 1px solid var(--gold);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .bryns-note .avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--dusty-rose);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-script); font-size: 1.4rem; color: white;
+      flex-shrink: 0;
+    }
+    .bryns-note p { font-style: italic; color: var(--warm-brown); font-size: 0.95rem; }
+    .bryns-note .note-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.25rem; }
+
+    /* ── MY PLAN ── */
+    .plan-info-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--parchment);
+      padding: 2rem;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 1.5rem;
+    }
+    .plan-detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.875rem 0;
+      border-bottom: 1px solid var(--parchment);
+      font-size: 0.9rem;
+    }
+    .plan-detail-row:last-child { border-bottom: none; }
+    .plan-detail-row .label { color: var(--muted); font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .plan-detail-row .value { color: var(--charcoal); font-weight: 400; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sage); display: inline-block; margin-right: 0.4rem; }
+    .status-paused { background: var(--gold); }
+
+    /* ── HISTORY ── */
+    .history-week {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--parchment);
+      margin-bottom: 1rem;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+    .history-week-header {
+      padding: 1rem 1.5rem;
+      background: var(--linen);
+      border-bottom: 1px solid var(--parchment);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .history-week-body { padding: 1rem 1.5rem; display: none; }
+    .history-week-body.open { display: block; }
+    .history-recipe-row { padding: 0.5rem 0; border-bottom: 1px solid var(--parchment); font-size: 0.9rem; color: var(--warm-brown); }
+    .history-recipe-row:last-child { border-bottom: none; }
+
+    /* ── CONTACT FORM ── */
+    .swap-form {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 2rem;
+      border: 1px solid var(--parchment);
+      box-shadow: var(--shadow-card);
+    }
+
+    /* ── LOGIN ── */
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .login-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 3rem 2.5rem;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--parchment);
+      text-align: center;
+    }
+    .login-card h2 { color: var(--charcoal); }
+
+    @media (max-width: 700px) {
+      .dashboard-layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; flex-direction: row; flex-wrap: wrap; padding: 1rem; }
+      .main { padding: 1.5rem 1rem; }
+      .welcome-header { flex-direction: column; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav class="nav">
+  <a class="nav-brand" href="index.html">Bryn's</a>
+  <div class="nav-links" id="navLinks">
+    <a href="index.html">Home</a>
+    <span id="navUserName" style="color:var(--dusty-rose); font-weight:700; font-family:var(--font-script); font-size:1.1rem;"></span>
+    <button class="btn btn-ghost btn-sm" id="logoutBtn" style="display:none;" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- ── LOGIN VIEW ── -->
+<div class="login-wrap" id="loginView">
+  <div class="login-card">
+    <svg viewBox="0 0 60 60" width="64" height="64" style="margin:0 auto 1rem;">
+      <circle cx="30" cy="30" r="28" fill="#faf6f0" stroke="#e8c4b8" stroke-width="2"/>
+      <circle cx="30" cy="22" r="10" fill="#e8c4b8"/>
+      <path d="M12 50 Q12 36 30 36 Q48 36 48 50" fill="#e8c4b8" opacity="0.6"/>
+    </svg>
+    <h2>Welcome Back</h2>
+    <p style="margin:0.5rem 0 1.5rem; font-size:0.9rem;">Sign in to your meal planning dashboard.</p>
+    <div id="loginAlert"></div>
+    <div class="form-group text-left">
+      <label>Email Address</label>
+      <input type="email" id="loginEmail" placeholder="you@email.com" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="form-group text-left">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="btn btn-primary" style="width:100%;" onclick="doLogin()">Sign In</button>
+    <p style="margin-top:1.5rem; font-size:0.82rem; color:var(--muted);">New here? <a href="index.html" style="color:var(--dusty-rose);">Sign up on the homepage →</a></p>
+    <div class="floral-divider mt-3" style="color:var(--blush);">✿ ✾ ✿</div>
+    <p style="font-size:0.75rem; color:var(--muted);">Demo: sarah@example.com / sarah2024<br>or dana@example.com / torres2024</p>
+  </div>
+</div>
+
+<!-- ── DASHBOARD VIEW ── -->
+<div id="dashboardView" style="display:none;">
+  <div class="dashboard-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section-label">My Menu</div>
+      <button class="sidebar-link active" data-panel="thisWeek" onclick="showPanel('thisWeek',this)">
+        <span class="icon">🌿</span> This Week's Recipes
+      </button>
+      <button class="sidebar-link" data-panel="history" onclick="showPanel('history',this)">
+        <span class="icon">📋</span> Recipe History
+      </button>
+
+      <div class="sidebar-section-label">My Account</div>
+      <button class="sidebar-link" data-panel="myPlan" onclick="showPanel('myPlan',this)">
+        <span class="icon">✨</span> My Plan
+      </button>
+      <button class="sidebar-link" data-panel="profile" onclick="showPanel('profile',this)">
+        <span class="icon">👤</span> My Profile
+      </button>
+
+      <div class="sidebar-section-label">Support</div>
+      <button class="sidebar-link" data-panel="swap" onclick="showPanel('swap',this)">
+        <span class="icon">🔄</span> Request a Swap
+      </button>
+      <button class="sidebar-link" data-panel="contact" onclick="showPanel('contact',this)">
+        <span class="icon">💬</span> Contact Bryn
+      </button>
+
+      <div class="sidebar-bottom">
+        <div class="floral-divider" style="color:var(--blush); font-size:0.9rem;">✿ ✾ ✿</div>
+        <button class="sidebar-link" onclick="logout()" style="color:var(--muted);">
+          <span class="icon">→</span> Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+      <!-- This Week's Recipes -->
+      <div class="panel active" id="panel-thisWeek">
+        <div class="welcome-header">
+          <div>
+            <span class="script" style="font-size:1.1rem; color:var(--dusty-rose);">Good to see you,</span>
+            <h1 id="welcomeName">Friend! 🌿</h1>
+          </div>
+          <div style="text-align:right;">
+            <div id="planBadgeWelcome"></div>
+            <p style="font-size:0.82rem; margin-top:0.25rem;" id="weekLabel"></p>
+          </div>
+        </div>
+
+        <div id="brynsNoteEl"></div>
+        <div id="noRecipesMsg" style="display:none;">
+          <div class="card text-center" style="padding:3rem;">
+            <svg viewBox="0 0 60 60" width="60" style="margin:0 auto 1rem; opacity:0.4;"><circle cx="30" cy="30" r="28" fill="var(--blush)"/><text x="16" y="40" font-size="24">📭</text></svg>
+            <h3 style="color:var(--muted);">No recipes this week yet</h3>
+            <p style="font-size:0.9rem; margin-top:0.5rem;">Bryn hasn't posted this week's menu yet. Check back soon!</p>
+          </div>
+        </div>
+        <div class="recipe-grid" id="recipeGrid"></div>
+      </div>
+
+      <!-- History -->
+      <div class="panel" id="panel-history">
+        <h2 style="margin-bottom:0.5rem;">Recipe History</h2>
+        <p style="margin-bottom:1.5rem; font-size:0.9rem;">All your past weekly menus, saved for easy reference.</p>
+        <div id="historyList"></div>
+      </div>
+
+      <!-- My Plan -->
+      <div class="panel" id="panel-myPlan">
+        <h2 style="margin-bottom:1.5rem;">My Plan</h2>
+        <div class="plan-info-card" id="planInfoCard"></div>
+        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+          <div class="card" style="flex:1; min-width:200px;">
+            <h3 style="font-size:1rem; margin-bottom:0.75rem;">💳 Payment</h3>
+            <p style="font-size:0.88rem;">Weekly payments via Venmo or Cash App. Bryn will send your request each week.</p>
+            <div style="margin-top:1rem; display:flex; gap:0.75rem;">
+              <div style="flex:1; background:var(--linen); border-radius:6px; padding:0.75rem; text-align:center; font-size:0.85rem;"><strong>Venmo</strong><br><span style="color:var(--muted);">@bryns-meals</span></div>
+              <div style="flex:1; background:var(--linen); border-radius:6px; padding:0.75rem; text-align:center; font-size:0.85rem;"><strong>Cash App</strong><br><span style="color:var(--muted);">$BrynsMeals</span></div>
+            </div>
+          </div>
+          <div class="card" style="flex:1; min-width:200px;">
+            <h3 style="font-size:1rem; margin-bottom:0.75rem;">⏸ Manage Subscription</h3>
+            <p style="font-size:0.88rem; margin-bottom:1rem;">Need a break? Pause your plan and we'll pick back up when you're ready.</p>
+            <button class="btn btn-ghost btn-sm" id="pauseBtn" onclick="togglePause()">Pause My Plan</button>
+            <div style="margin-top:0.75rem;">
+              <button class="btn btn-sm" style="background:transparent; color:var(--error); border:1px solid var(--error);" onclick="confirmCancel()">Cancel Subscription</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile -->
+      <div class="panel" id="panel-profile">
+        <h2 style="margin-bottom:1.5rem;">My Profile</h2>
+        <div class="card">
+          <div id="profileAlert"></div>
+          <div class="grid-2">
+            <div class="form-group"><label>Name</label><input type="text" id="p_name" /></div>
+            <div class="form-group"><label>Email</label><input type="email" id="p_email" /></div>
+            <div class="form-group"><label>Phone</label><input type="tel" id="p_phone" /></div>
+            <div class="form-group">
+              <label>Delivery Preference</label>
+              <select id="p_delivery">
+                <option value="email">Email</option>
+                <option value="text">Text / SMS</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Preferred Grocery Store</label><input type="text" id="p_store" /></div>
+            <div class="form-group"><label>Dietary Restrictions / Allergies</label><input type="text" id="p_dietary" /></div>
+          </div>
+          <div class="form-group">
+            <label>Change Password</label>
+            <input type="password" id="p_password" placeholder="Leave blank to keep current password" />
+          </div>
+          <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+        </div>
+      </div>
+
+      <!-- Swap Request -->
+      <div class="panel" id="panel-swap">
+        <h2 style="margin-bottom:0.5rem;">Request a Recipe Swap</h2>
+        <p style="margin-bottom:1.5rem; font-size:0.9rem;">Not feeling one of this week's recipes? Let Bryn know and she'll send an alternative.</p>
+        <div class="swap-form">
+          <div id="swapAlert"></div>
+          <div class="form-group">
+            <label>Which recipe would you like to swap?</label>
+            <select id="sw_recipe">
+              <option value="">— Choose a recipe —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Why would you like to swap it?</label>
+            <textarea id="sw_reason" rows="3" placeholder="e.g. My family doesn't love fish. Something with chicken would be great!"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Any specific preferences for the replacement?</label>
+            <input type="text" id="sw_pref" placeholder="e.g. Quick prep, vegetarian, kid-friendly…" />
+          </div>
+          <button class="btn btn-primary" onclick="submitSwap()">Send Swap Request ✿</button>
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div class="panel" id="panel-contact">
+        <h2 style="margin-bottom:0.5rem;">Contact Bryn</h2>
+        <p style="margin-bottom:1.5rem; font-size:0.9rem;">Have a question, feedback, or just want to say hi? Bryn typically replies within a few hours.</p>
+        <div class="swap-form">
+          <div id="contactAlert"></div>
+          <div class="form-group">
+            <label>Subject</label>
+            <input type="text" id="ct_subject" placeholder="e.g. Question about my groceries…" />
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea id="ct_message" rows="5" placeholder="Write your message here…"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="submitContact()">Send Message</button>
+          <div class="floral-divider mt-3">✿ ✾ ✿</div>
+          <p style="font-size:0.85rem; color:var(--muted); text-align:center;">You can also reach Bryn directly at <a href="mailto:bryn@example.com">bryn@example.com</a></p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Cancel Confirm Modal -->
+<div class="modal-overlay" id="cancelModal">
+  <div class="modal text-center">
+    <button class="modal-close" onclick="document.getElementById('cancelModal').classList.remove('open')">×</button>
+    <h3 style="color:var(--warm-brown);">We'll miss you! 🌿</h3>
+    <p style="margin:1rem 0;">Are you sure you want to cancel your subscription? You can resubscribe anytime.</p>
+    <div style="display:flex; gap:1rem; justify-content:center; margin-top:1.5rem;">
+      <button class="btn btn-ghost" onclick="document.getElementById('cancelModal').classList.remove('open')">Keep My Plan</button>
+      <button class="btn" style="background:var(--error);color:white;" onclick="doCancel()">Yes, Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  let currentClient = null;
+
+  function init() {
+    const session = DB.getSession();
+    if (session && session.type === 'client') {
+      const client = DB.getClient(session.id);
+      if (client) { showDashboard(client); return; }
+    }
+    showLogin();
+  }
+
+  function showLogin() {
+    document.getElementById('loginView').style.display = 'flex';
+    document.getElementById('dashboardView').style.display = 'none';
+    document.getElementById('logoutBtn').style.display = 'none';
+  }
+
+  function doLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pw = document.getElementById('loginPassword').value;
+    const client = DB.loginClient(email, pw);
+    if (!client) {
+      document.getElementById('loginAlert').innerHTML = '<div class="alert alert-error">Incorrect email or password. Please try again.</div>';
+      return;
+    }
+    DB.setSession({ type: 'client', id: client.id });
+    showDashboard(client);
+  }
+
+  function showDashboard(client) {
+    currentClient = client;
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('dashboardView').style.display = 'block';
+    document.getElementById('logoutBtn').style.display = 'inline-block';
+    document.getElementById('navUserName').textContent = client.name.split(' ')[0];
+    renderDashboard();
+  }
+
+  function logout() {
+    DB.clearSession();
+    currentClient = null;
+    showLogin();
+  }
+
+  function showPanel(id, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    if (btn) btn.classList.add('active');
+  }
+
+  function renderDashboard() {
+    const c = currentClient;
+
+    // Welcome header
+    document.getElementById('welcomeName').innerHTML = `${c.name.split(' ')[0]}! <em style="font-size:0.7em;">✿</em>`;
+    const planLabel = c.plan === 'premium' ? 'Premium Plan' : 'Basic Plan';
+    document.getElementById('planBadgeWelcome').innerHTML = `<span class="badge ${c.plan === 'premium' ? 'badge-gold' : 'badge-rose'}">${planLabel}</span>`;
+    document.getElementById('weekLabel').textContent = 'Week of ' + DB.formatDate(DB.currentWeekDate());
+
+    // Recipes
+    const weekData = DB.getCurrentWeekRecipes(c.id);
+    const grid = document.getElementById('recipeGrid');
+    const noMsg = document.getElementById('noRecipesMsg');
+    const noteEl = document.getElementById('brynsNoteEl');
+
+    if (!weekData || !weekData.recipes.length) {
+      noMsg.style.display = 'block';
+      grid.innerHTML = '';
+      noteEl.innerHTML = '';
+    } else {
+      noMsg.style.display = 'none';
+      noteEl.innerHTML = `
+        <div class="bryns-note">
+          <div class="avatar">B</div>
+          <div>
+            <div class="note-label">A note from Bryn</div>
+            <p>${weekData.brynsNote}</p>
+          </div>
+        </div>`;
+
+      grid.innerHTML = weekData.recipes.map((r, i) => `
+        <div class="recipe-card">
+          <div class="recipe-card-header">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem;">
+              <h3>${r.title}</h3>
+              ${r.swapped ? '<span class="badge badge-sage" style="flex-shrink:0;">Swapped</span>' : ''}
+            </div>
+            <div style="margin-top:0.4rem;">${(r.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+          </div>
+          <div class="recipe-card-body">
+            <p style="font-size:0.88rem;">${r.description}</p>
+            <div class="recipe-meta">
+              <span>⏱ Prep ${r.prepTime}</span>
+              <span>🍳 Cook ${r.cookTime}</span>
+              <span>👥 Serves ${r.servings || c.familySize}</span>
+            </div>
+            <div class="ingredient-list">
+              <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:0.25rem;">Ingredients</p>
+              <p>${r.ingredients.join(' · ')}</p>
+            </div>
+          </div>
+        </div>`).join('');
+
+      // Populate swap dropdown
+      const sw = document.getElementById('sw_recipe');
+      sw.innerHTML = '<option value="">— Choose a recipe —</option>' +
+        weekData.recipes.map((r, i) => `<option value="${i}">${r.title}</option>`).join('');
+    }
+
+    // History
+    const allRecipes = DB.getClientRecipes(c.id);
+    const historyList = document.getElementById('historyList');
+    if (!allRecipes.length) {
+      historyList.innerHTML = '<div class="card text-center"><p style="color:var(--muted);">No recipe history yet.</p></div>';
+    } else {
+      historyList.innerHTML = allRecipes.map((week, wi) => `
+        <div class="history-week">
+          <div class="history-week-header" onclick="toggleHistory(${wi})">
+            <strong>Week of ${DB.formatDate(week.weekOf)}</strong>
+            <span style="color:var(--muted); font-size:0.85rem;">${week.recipes.length} recipes ▾</span>
+          </div>
+          <div class="history-week-body" id="hw-${wi}">
+            ${week.recipes.map(r => `
+              <div class="history-recipe-row">
+                <strong>${r.title}</strong>
+                <span style="color:var(--muted); font-size:0.82rem;"> — ${r.prepTime} prep · ${r.cookTime} cook</span>
+              </div>`).join('')}
+          </div>
+        </div>`).join('');
+    }
+
+    // My Plan
+    const statusDot = c.status === 'paused' ? 'status-dot status-paused' : 'status-dot';
+    const statusLabel = c.status === 'active' ? 'Active' : c.status === 'paused' ? 'Paused' : 'Pending';
+    document.getElementById('planInfoCard').innerHTML = `
+      <div class="plan-detail-row"><span class="label">Plan</span><span class="value"><span class="badge ${c.plan === 'premium' ? 'badge-gold' : 'badge-rose'}">${c.plan === 'premium' ? 'Premium' : 'Basic'}</span></span></div>
+      <div class="plan-detail-row"><span class="label">Status</span><span class="value"><span class="${statusDot}"></span>${statusLabel}</span></div>
+      <div class="plan-detail-row"><span class="label">Weekly Rate</span><span class="value">$${c.weeklyRate} / week</span></div>
+      <div class="plan-detail-row"><span class="label">Next Billing</span><span class="value">${DB.formatDate(c.nextBillingDate)}</span></div>
+      <div class="plan-detail-row"><span class="label">Delivery Method</span><span class="value" style="text-transform:capitalize;">${c.deliveryMethod}</span></div>
+      <div class="plan-detail-row"><span class="label">Grocery Store</span><span class="value">${c.groceryStore || '—'}</span></div>
+      <div class="plan-detail-row"><span class="label">Member Since</span><span class="value">${DB.formatDate(c.joinDate)}</span></div>`;
+
+    const pauseBtn = document.getElementById('pauseBtn');
+    if (c.status === 'paused') {
+      pauseBtn.textContent = 'Resume My Plan';
+      pauseBtn.classList.remove('btn-ghost');
+      pauseBtn.classList.add('btn-sage');
+    } else {
+      pauseBtn.textContent = 'Pause My Plan';
+      pauseBtn.classList.add('btn-ghost');
+      pauseBtn.classList.remove('btn-sage');
+    }
+
+    // Profile
+    document.getElementById('p_name').value = c.name;
+    document.getElementById('p_email').value = c.email;
+    document.getElementById('p_phone').value = c.phone || '';
+    document.getElementById('p_delivery').value = c.deliveryMethod;
+    document.getElementById('p_store').value = c.groceryStore || '';
+    document.getElementById('p_dietary').value = c.dietaryRestrictions || '';
+  }
+
+  function toggleHistory(idx) {
+    const el = document.getElementById('hw-' + idx);
+    el.classList.toggle('open');
+  }
+
+  function togglePause() {
+    const newStatus = currentClient.status === 'paused' ? 'active' : 'paused';
+    currentClient = DB.updateClient(currentClient.id, { status: newStatus });
+    renderDashboard();
+  }
+
+  function confirmCancel() { document.getElementById('cancelModal').classList.add('open'); }
+  function doCancel() {
+    currentClient = DB.updateClient(currentClient.id, { status: 'cancelled' });
+    document.getElementById('cancelModal').classList.remove('open');
+    renderDashboard();
+  }
+
+  function saveProfile() {
+    const updates = {
+      name: document.getElementById('p_name').value.trim(),
+      email: document.getElementById('p_email').value.trim(),
+      phone: document.getElementById('p_phone').value.trim(),
+      deliveryMethod: document.getElementById('p_delivery').value,
+      groceryStore: document.getElementById('p_store').value.trim(),
+      dietaryRestrictions: document.getElementById('p_dietary').value.trim(),
+    };
+    const pw = document.getElementById('p_password').value;
+    if (pw) updates.password = pw;
+    currentClient = DB.updateClient(currentClient.id, updates);
+    document.getElementById('profileAlert').innerHTML = '<div class="alert alert-success">✓ Profile updated successfully.</div>';
+    setTimeout(() => document.getElementById('profileAlert').innerHTML = '', 3000);
+    document.getElementById('navUserName').textContent = updates.name.split(' ')[0];
+  }
+
+  function submitSwap() {
+    const recipeIdx = document.getElementById('sw_recipe').value;
+    const reason = document.getElementById('sw_reason').value.trim();
+    const pref = document.getElementById('sw_pref').value.trim();
+    const alertEl = document.getElementById('swapAlert');
+    if (recipeIdx === '' || !reason) {
+      alertEl.innerHTML = '<div class="alert alert-error">Please choose a recipe and tell Bryn why you\'d like to swap it.</div>';
+      return;
+    }
+    DB.addSwapRequest({ clientId: currentClient.id, clientName: currentClient.name, recipeIndex: parseInt(recipeIdx), reason, preference: pref });
+    alertEl.innerHTML = '<div class="alert alert-success">✓ Swap request sent! Bryn will follow up soon.</div>';
+    document.getElementById('sw_recipe').value = '';
+    document.getElementById('sw_reason').value = '';
+    document.getElementById('sw_pref').value = '';
+    setTimeout(() => alertEl.innerHTML = '', 4000);
+  }
+
+  function submitContact() {
+    const subject = document.getElementById('ct_subject').value.trim();
+    const message = document.getElementById('ct_message').value.trim();
+    const alertEl = document.getElementById('contactAlert');
+    if (!subject || !message) {
+      alertEl.innerHTML = '<div class="alert alert-error">Please fill in both fields.</div>';
+      return;
+    }
+    // In a real app this would send an email/notification
+    alertEl.innerHTML = '<div class="alert alert-success">✓ Message sent! Bryn will be in touch shortly.</div>';
+    document.getElementById('ct_subject').value = '';
+    document.getElementById('ct_message').value = '';
+    setTimeout(() => alertEl.innerHTML = '', 4000);
+  }
+
+  init();
+</script>
+</body>
+</html>
